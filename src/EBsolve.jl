@@ -1,5 +1,8 @@
 module EBsolve
 
-greet() = print("Hello World!")
+include("Constants.jl")
+include("BackgroundCosmology.jl")
+
+greet() = println("Ok")
 
 end # module EBsolve

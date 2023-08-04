@@ -2,3 +2,6 @@ name = "EBsolve"
 uuid = "51659f4b-7224-434c-9850-e86f36bae1cc"
 authors = ["teo "]
 version = "0.1.0"
+
+[deps]
+Test = "8dfed614-e22c-5e08-85e1-65c5234f0b40"
