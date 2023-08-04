@@ -7,16 +7,16 @@ eval_Ω0_Λ(Ω0_k, Ω0_B, Ω0_CDM, Ω0_γ, Ω0_nu)	= 1 - (Ω0_k + Ω0_B + Ω0_CD
 
 Base.@kwdef struct BackgroundCosmology
 	
-	h		:: Float64 = 0.67
-	Ω0_B	:: Float64 = 0.05	 
+	h				:: Float64 = 0.67
+	Ω0_B		:: Float64 = 0.05	 
 	Ω0_CDM	:: Float64 = 0.267
-	Ω0_k	:: Float64 = 0.0
+	Ω0_k		:: Float64 = 0.0
 	T0_CMB 	:: Float64 = 2.7255
 	N_eff 	:: Float64 = 3.046
 	
-	Ω0_γ	:: Float64 = eval_Ω0_γ(T0_CMB, h*100)
-	Ω0_nu	:: Float64 = eval_Ω0_nu(N_eff, T0_CMB, h*100)
-	Ω0_Λ	:: Float64 = eval_Ω0_Λ(Ω0_k, Ω0_B, Ω0_CDM, Ω0_γ, Ω0_nu)
+	Ω0_γ		:: Float64 = eval_Ω0_γ(T0_CMB, h*100)
+	Ω0_nu		:: Float64 = eval_Ω0_nu(N_eff, T0_CMB, h*100)
+	Ω0_Λ		:: Float64 = eval_Ω0_Λ(Ω0_k, Ω0_B, Ω0_CDM, Ω0_γ, Ω0_nu)
 
 	x_start	:: Float64 = log(1e-8)
 	x_end 	:: Float64 = log(1.0)
