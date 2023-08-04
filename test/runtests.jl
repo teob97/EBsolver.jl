@@ -1,4 +1,6 @@
-using EBsolve
+using EBsolver
 using Test
 
-@test G_SI ≈ 6.67430e-11
+@testset "BackgroundCosmology test" begin
+  include("BackgroundCosmology.jl")
+end
