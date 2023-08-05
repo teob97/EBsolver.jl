@@ -4,7 +4,7 @@ on: [push]
 
 jobs:
   test:
-    name: Julia ${{ matrix.julia-version }} - ${{ matrix.os }} - ${{ matrix.arch }}
+    name: Julia ${{ matrix.julia-version }} - ${{ matrix.os }}
     runs-on: ${{ matrix.os }}
     strategy:
       matrix:
