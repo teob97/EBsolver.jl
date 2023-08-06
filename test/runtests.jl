@@ -1,5 +1,5 @@
 using EBsolver
-using Test
+using Test, Plots
 
 @testset "BackgroundCosmology test" begin
   include("BackgroundCosmology.jl")
