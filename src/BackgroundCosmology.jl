@@ -45,12 +45,15 @@ function ddHpddx_of_x(x::Float64, BC::BackgroundCosmology)::Float64
 end
 
 function η_of_x(BC::BackgroundCosmology)
-	
+
 	tspan = (BC.x_start, BC.x_end)
 	u_0 = c_SI / Hp_of_x(BC.x_start, BC)
 	conformal_time(u, p, t) = c_SI / Hp_of_x(t, BC)
 
 	prob = ODE.ODEProblem(conformal_time, u_0, tspan)
+	f = ODE.solve(prob)
+	
+	x = LinRange(BC.x_start, BC.x_end, BC.n_splines)
+	return Spline.interpolate(x, f(x).u, Spline.BSplineOrder(3))
 
-	return ODE.solve(prob)
 end

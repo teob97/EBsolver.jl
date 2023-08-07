@@ -15,10 +15,10 @@ let
     )
     savefig("plots/BackgroundCosmology/Hp.png")
 
-    eta = η_of_x(bc)(x)
+    eta = η_of_x(bc).(x)
     p = plot(
-        eta.t, 
-        eta.u/3.086e22, 
+        x, 
+        eta/3.086e22, 
         yscale=:log10, 
         title = "η(x) [Mpc]",
         xlabel = "x = ln(a)",
@@ -28,8 +28,8 @@ let
 
     H = [Hp_of_x(i, bc) for i in x]
     p = plot(
-        eta.t, 
-        (eta.u) .* H / c_SI,
+        x, 
+        (eta) .* H / c_SI,
         title = "η(x) * Hp(x) / c",
         xlabel = "x = ln(a)",
         legend = false
