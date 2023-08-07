@@ -11,6 +11,14 @@ T_test = 2.7255
     bc = BackgroundCosmology()
     x = LinRange(bc.x_start, bc.x_end, bc.n_splines)
     H = [Hp_of_x(i, bc)/(1000/3.086e22)/100 for i in x]
-    p = plot(x, H, yscale=:log10, title = "Hp (100 km/s/Mpc)")
-    savefig("../plots/prova.png")
+    p = plot(x, H, yscale=:log10, title = "Hp(x) [100 km/s/Mpc]")
+    savefig("../plots/prova_Hp.png")
+end
+
+@testset begin
+    bc = BackgroundCosmology()
+    x = LinRange(bc.x_start, bc.x_end, bc.n_splines)
+    f = η_of_x(bc)(x)
+    p = plot(f.t, f.u/3.086e22, yscale=:log10, title = "η(x) [Mpc]")
+    savefig("../plots/prova_eta.png")
 end
