@@ -58,3 +58,18 @@ Base.@kwdef struct BackgroundCosmology
 	η_of_x :: Spline.SplineInterpolation = eval_η_of_x(Hp_of_x, x_start, x_end, n_splines)
 
 end
+
+
+Base.show(io::IO, BC::BackgroundCosmology) = print(
+	io, 
+	"Info about cosmology class:\n",
+	"Ω0_B:\t\t", 	BC.Ω0_B, 	"\n",
+	"Ω0_CDM:\t\t", 	BC.Ω0_CDM, 	"\n",
+	"Ω0_Λ:\t\t", 	BC.Ω0_Λ, 	"\n",
+	"Ω0_K:\t\t", 	BC.Ω0_k, 	"\n",
+	"Ω0_nu:\t\t", 	BC.Ω0_nu, 	"\n",
+	"Ω0_γ:\t\t", 	BC.Ω0_γ, 	"\n",
+	"N_eff:\t\t", 	BC.N_eff, 	"\n",
+	"h:\t\t", 		BC.h, 		"\n",
+	"T0_CMB:\t\t", 	BC.T0_CMB, 	"\n",
+)
