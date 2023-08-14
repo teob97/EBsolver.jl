@@ -5,7 +5,7 @@ let
     bc = BackgroundCosmology()
     x = LinRange(bc.x_start, bc.x_end, bc.n_splines)
 
-    H = [Hp_of_x(i, bc)/(1000/3.086e22)/100 for i in x]
+    H = bc.Hp_of_x.(x)/(1000/3.086e22)/100
     p = plot(
         x, H,
         yscale=:log10, 
@@ -15,7 +15,7 @@ let
     )
     savefig("plots/BackgroundCosmology/Hp.png")
 
-    eta = η_of_x(bc).(x)
+    eta = bc.η_of_x.(x)
     p = plot(
         x, 
         eta/3.086e22, 
@@ -26,7 +26,7 @@ let
         )
     savefig("plots/BackgroundCosmology/eta.png")
 
-    H = [Hp_of_x(i, bc) for i in x]
+    H = bc.Hp_of_x.(x)
     p = plot(
         x, 
         (eta) .* H / c_SI,
