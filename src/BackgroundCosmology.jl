@@ -84,13 +84,41 @@ ddHpddx_of_x(BC::BackgroundCosmology, x::AbstractRange)		= ddHpddx_of_x(BC, coll
 
 function η_of_x(BC::BackgroundCosmology)::Spline.SplineInterpolation
 
-	u_0 = c_SI / Hp_of_x(BC, x_start)
+	u_0 = c_SI / Hp_of_x(BC, BC.x_start)
 	conformal_time(u, p, t) = c_SI / Hp_of_x(BC,t)
 
 	prob = ODE.ODEProblem(conformal_time, u_0, (BC.x_start, BC.x_end))
 	f = ODE.solve(prob)
 	
-	x = LinRange(BC.x_start, BC.x_end, BC.n_splines)
+	x = range(BC.x_start, BC.x_end, BC.n_splines)
 	return Spline.interpolate(x, f(x).u, Spline.BSplineOrder(3))
 
+end
+
+function comoving_distance(BC::BackgroundCosmology, x::Float64) 
+	η = η_of_x(BC)
+	# Rember that we are working with x=log(a) where a is the scale factor
+	return η(ln(0)) - η(x)
+end
+
+function angular_distance_of_x(BC::BackgroundCosmology, x::Float64) 
+	
+	X = comoving_distance(BC, x)
+	k = sqrt(abs(BC.Ω0_k)) * BC.H0_SI * X / c_SI
+	
+	if BC.Ω0_k < 0
+		r = X * sin(k) / k
+	elseif BC.Ω0_k > 0
+		r = X * sinh(k) / k
+	else
+		r = X
+	end
+
+	return exp(x)*r
+
+end
+
+function luminosity_distance_of_x(BC::BackgroundCosmology, x::Float64)
+	ang_dist = angular_distance_of_x(BC, x)
+	return ang_dist / exp(2x)
 end

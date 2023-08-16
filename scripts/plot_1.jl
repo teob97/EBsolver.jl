@@ -3,9 +3,9 @@ using Plots
 
 let
     bc = BackgroundCosmology()
-    x = LinRange(bc.x_start, bc.x_end, bc.n_splines)
+    x = range(bc.x_start, bc.x_end, bc.n_splines)
 
-    H = bc.Hp_of_x.(x)/(1000/3.086e22)/100
+    H = Hp_of_x(bc, x)/(1000/3.086e22)/100
     p = plot(
         x, H,
         yscale=:log10, 
@@ -15,10 +15,10 @@ let
     )
     savefig("plots/BackgroundCosmology/Hp.png")
 
-    eta = bc.η_of_x.(x)
+    eta = η_of_x(bc)
     p = plot(
         x, 
-        eta/3.086e22, 
+        eta.(x)./3.086e22, 
         yscale=:log10, 
         title = "η(x) [Mpc]",
         xlabel = "x = ln(a)",
@@ -26,10 +26,10 @@ let
         )
     savefig("plots/BackgroundCosmology/eta.png")
 
-    H = bc.Hp_of_x.(x)
+    H = Hp_of_x(bc, x)
     p = plot(
         x, 
-        (eta) .* H / c_SI,
+        eta.(x) .* H ./ c_SI,
         title = "η(x) * Hp(x) / c",
         xlabel = "x = ln(a)",
         legend = false
