@@ -44,10 +44,21 @@ Base.show(io::IO, BC::BackgroundCosmology) = print(
 )
 
 # We use x=ln(a) where a=a(t) is the scale factor
-H_of_x(BC::BackgroundCosmology, x::Float64)::Float64		= BC.H0_SI*sqrt((BC.Ω0_B+BC.Ω0_CDM)*exp(-3x) + (BC.Ω0_γ+BC.Ω0_nu)*exp(-4x) + BC.Ω0_k*exp(-2x) + BC.Ω0_Λ)
-Hp_of_x(BC::BackgroundCosmology, x::Float64)::Float64		= exp(x)*H_of_x(BC, x)	
-dHpdx_of_x(BC::BackgroundCosmology, x::Float64)::Float64	= 0.5 * BC.H0_SI^2 * (-(BC.Ω0_B+BC.Ω0_CDM)*exp(-2x) - 2*(BC.Ω0_γ+BC.Ω0_nu)*exp(-3x) + 2*BC.Ω0_Λ*exp(x))
-ddHpddx_of_x(BC::BackgroundCosmology, x::Float64)::Float64	= Hp_of_x(BC, x) * 0.5 * BC.H0_SI^2 * (2*(BC.Ω0_B+BC.Ω0_CDM)*exp(-3x) + 6*(BC.Ω0_γ+BC.Ω0_nu)*exp(-4x) + 2*BC.Ω0_Λ)
+H_of_x(BC::BackgroundCosmology, x::Float64) 		= BC.H0_SI*sqrt((BC.Ω0_B+BC.Ω0_CDM)*exp(-3x) + (BC.Ω0_γ+BC.Ω0_nu)*exp(-4x) + BC.Ω0_k*exp(-2x) + BC.Ω0_Λ)
+H_of_x(BC::BackgroundCosmology, x::Vector{Float64})	= [H_of_x(BC, i) for i in x]
+H_of_x(BC::BackgroundCosmology, x::AbstractRange)	= H_of_x(BC, collect(x))
+
+Hp_of_x(BC::BackgroundCosmology, x::Float64)			= exp(x)*H_of_x(BC, x)
+Hp_of_x(BC::BackgroundCosmology, x::Vector{Float64})	= [Hp_of_x(BC, i) for i in x]
+Hp_of_x(BC::BackgroundCosmology, x::AbstractRange)		= Hp_of_x(BC, collect(x))
+
+dHpdx_of_x(BC::BackgroundCosmology, x::Float64)			= 0.5 * BC.H0_SI^2 * (-(BC.Ω0_B+BC.Ω0_CDM)*exp(-2x) - 2*(BC.Ω0_γ+BC.Ω0_nu)*exp(-3x) + 2*BC.Ω0_Λ*exp(x))
+dHpdx_of_x(BC::BackgroundCosmology, x::Vector{Float64})	= [dHpdx_of_x(BC, i) for i in x]
+dHpdx_of_x(BC::BackgroundCosmology, x::AbstractRange)	= dHpdx_of_x(BC, collect(x))
+
+ddHpddx_of_x(BC::BackgroundCosmology, x::Float64)			= Hp_of_x(BC, x) * 0.5 * BC.H0_SI^2 * (2*(BC.Ω0_B+BC.Ω0_CDM)*exp(-3x) + 6*(BC.Ω0_γ+BC.Ω0_nu)*exp(-4x) + 2*BC.Ω0_Λ)
+ddHpddx_of_x(BC::BackgroundCosmology, x::Vector{Float64})	= [ddHpddx_of_x(BC, i) for i in x]
+ddHpddx_of_x(BC::BackgroundCosmology, x::AbstractRange)		= ddHpddx_of_x(BC, collect(x))
 
 Ω_B(BC::BackgroundCosmology, x::Float64)::Float64	= BC.Ω0_B	* BC.H0_SI^2 / (exp(3x) * H_of_x(BC, x))
 Ω_CDM(BC::BackgroundCosmology, x::Float64)::Float64	= BC.Ω0_CDM	* BC.H0_SI^2 / (exp(3x) * H_of_x(BC, x))
@@ -55,6 +66,21 @@ ddHpddx_of_x(BC::BackgroundCosmology, x::Float64)::Float64	= Hp_of_x(BC, x) * 0.
 Ω_nu(BC::BackgroundCosmology, x::Float64)::Float64	= BC.Ω0_nu	* BC.H0_SI^2 / (exp(4x) * H_of_x(BC, x))
 Ω_k(BC::BackgroundCosmology, x::Float64)::Float64	= BC.Ω0_k	* BC.H0_SI^2 / (exp(2x) * H_of_x(BC, x))
 Ω_Λ(BC::BackgroundCosmology, x::Float64)::Float64	= BC.Ω0_Λ	* BC.H0_SI^2 /  H_of_x(BC, x)
+
+Ω_B(BC::BackgroundCosmology, x::Vector{Float64})	= [Ω_B(BC, i) for i in x]
+Ω_CDM(BC::BackgroundCosmology, x::Vector{Float64})	= [Ω_CDM(BC, i) for i in x]
+Ω_γ(BC::BackgroundCosmology, x::Vector{Float64})	= [Ω_γ(BC, i) for i in x]
+Ω_nu(BC::BackgroundCosmology, x::Vector{Float64})	= [Ω_nu(BC, i) for i in x]
+Ω_k(BC::BackgroundCosmology, x::Vector{Float64})	= [Ω_k(BC, i) for i in x]
+Ω_Λ(BC::BackgroundCosmology, x::Vector{Float64})	= [Ω_Λ(BC, i) for i in x]
+
+Ω_B(BC::BackgroundCosmology, x::AbstractRange)		= Ω_B(BC, collect(x))
+Ω_CDM(BC::BackgroundCosmology, x::AbstractRange)	= Ω_CDM(BC, collect(x))	
+Ω_γ(BC::BackgroundCosmology, x::AbstractRange)		= Ω_γ(BC, collect(x))
+Ω_nu(BC::BackgroundCosmology, x::AbstractRange)		= Ω_nu(BC, collect(x))
+Ω_k(BC::BackgroundCosmology, x::AbstractRange)		= Ω_k(BC, collect(x))
+Ω_Λ(BC::BackgroundCosmology, x::AbstractRange)		= Ω_Λ(BC, collect(x))
+
 
 function η_of_x(BC::BackgroundCosmology)::Spline.SplineInterpolation
 
