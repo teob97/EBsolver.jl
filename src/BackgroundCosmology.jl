@@ -3,6 +3,7 @@ export eval_ρ0_crit
 export H_of_x, Hp_of_x, dHpdx_of_x, ddHpddx_of_x
 export Ω_B, Ω_CDM, Ω_k, Ω_nu, Ω_γ, Ω_Λ
 export η_of_x
+export comoving_distance_of_x, angular_distance_of_x, luminosity_distance_of_x
 
 eval_ρ0_crit(H0::Float64) = (3*H0^2)/(8*π*G_SI)
 eval_Ω0_γ(T0_CMB_kelvin::Float64, H0::Float64) = 2 * (π^2/30) * (k_b_SI*T0_CMB_kelvin)^4 / (ħ_SI^3 * c_SI^3 * eval_ρ0_crit(H0) * c_SI^2)
@@ -23,6 +24,7 @@ Base.@kwdef struct BackgroundCosmology
 	Ω0_nu   :: Float64 = eval_Ω0_nu(N_eff, T0_CMB, H0_SI)
 	Ω0_Λ    :: Float64 = eval_Ω0_Λ(Ω0_k, Ω0_B, Ω0_CDM, Ω0_γ, Ω0_nu)
 
+	# We use x=log(a) where a=a(t) is the scale factor
 	x_start :: Float64 = log(exp(-12))
 	x_end   :: Float64 = log(1.0)
 	n_splines :: Int64 = 1000
@@ -43,7 +45,6 @@ Base.show(io::IO, BC::BackgroundCosmology) = print(
 	"T0_CMB:\t\t", 	BC.T0_CMB, 	"\n",
 )
 
-# We use x=ln(a) where a=a(t) is the scale factor
 H_of_x(BC::BackgroundCosmology, x::Float64) 		= BC.H0_SI*sqrt((BC.Ω0_B+BC.Ω0_CDM)*exp(-3x) + (BC.Ω0_γ+BC.Ω0_nu)*exp(-4x) + BC.Ω0_k*exp(-2x) + BC.Ω0_Λ)
 H_of_x(BC::BackgroundCosmology, x::Vector{Float64})	= [H_of_x(BC, i) for i in x]
 H_of_x(BC::BackgroundCosmology, x::AbstractRange)	= H_of_x(BC, collect(x))
@@ -95,15 +96,15 @@ function η_of_x(BC::BackgroundCosmology)::Spline.SplineInterpolation
 
 end
 
-function comoving_distance(BC::BackgroundCosmology, x::Float64) 
+function comoving_distance_of_x(BC::BackgroundCosmology, x::Float64) 
 	η = η_of_x(BC)
 	# Rember that we are working with x=log(a) where a is the scale factor
-	return η(ln(0)) - η(x)
+	return η(log(1.0)) - η(x)
 end
 
-function angular_distance_of_x(BC::BackgroundCosmology, x::Float64) 
-	
-	X = comoving_distance(BC, x)
+function transverse_comoving_distance_of_x(BC::BackgroundCosmology, x::Float64)
+
+	X = comoving_distance_of_x(BC, x)
 	k = sqrt(abs(BC.Ω0_k)) * BC.H0_SI * X / c_SI
 	
 	if BC.Ω0_k < 0
@@ -114,11 +115,16 @@ function angular_distance_of_x(BC::BackgroundCosmology, x::Float64)
 		r = X
 	end
 
-	return exp(x)*r
+	return r
 
 end
 
+function angular_distance_of_x(BC::BackgroundCosmology, x::Float64) 
+	r = transverse_comoving_distance_of_x(BC, x)
+	return exp(x)*r
+end
+
 function luminosity_distance_of_x(BC::BackgroundCosmology, x::Float64)
-	ang_dist = angular_distance_of_x(BC, x)
-	return ang_dist / exp(2x)
+	r = transverse_comoving_distance_of_x(BC, x)
+	return exp(-x)*r
 end
