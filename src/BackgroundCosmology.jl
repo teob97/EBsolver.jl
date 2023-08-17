@@ -96,35 +96,39 @@ function η_of_x(BC::BackgroundCosmology)::Spline.SplineInterpolation
 
 end
 
-function comoving_distance_of_x(BC::BackgroundCosmology, x::Float64) 
+function comoving_distance_of_x(BC::BackgroundCosmology, x::Union{Float64, Vector{Float64}})
 	η = η_of_x(BC)
 	# Rember that we are working with x=log(a) where a is the scale factor
-	return η(log(1.0)) - η(x)
+	return η(log(1.0)) .- η.(x)
+end
+function comoving_distance_of_x(BC::BackgroundCosmology, x::AbstractRange)
+	return comoving_distance_of_x(BC, collect(x))
 end
 
-function transverse_comoving_distance_of_x(BC::BackgroundCosmology, x::Float64)
+function transverse_comoving_distance_of_x(BC::BackgroundCosmology, x::Union{Float64, Vector{Float64}})
 
 	X = comoving_distance_of_x(BC, x)
 	k = sqrt(abs(BC.Ω0_k)) * BC.H0_SI * X / c_SI
-	
-	if BC.Ω0_k < 0
-		r = X * sin(k) / k
-	elseif BC.Ω0_k > 0
-		r = X * sinh(k) / k
-	else
-		r = X
-	end
+
+	BC.Ω0_k < 0 ? r = X .* sin.(k) ./ k :
+	BC.Ω0_k > 0 ? r = X .* sinh.(k) ./ k : r = X
 
 	return r
 
 end
 
-function angular_distance_of_x(BC::BackgroundCosmology, x::Float64) 
+function angular_distance_of_x(BC::BackgroundCosmology, x::Union{Float64, Vector{Float64}}) 
 	r = transverse_comoving_distance_of_x(BC, x)
-	return exp(x)*r
+	return exp.(x) .* r
+end
+function angular_distance_of_x(BC::BackgroundCosmology, x::AbstractRange)
+	return angular_distance_of_x(BC, collect(x))
 end
 
-function luminosity_distance_of_x(BC::BackgroundCosmology, x::Float64)
+function luminosity_distance_of_x(BC::BackgroundCosmology, x::Union{Float64, Vector{Float64}})
 	r = transverse_comoving_distance_of_x(BC, x)
-	return exp(-x)*r
+	return exp.(-x) .* r
+end
+function luminosity_distance_of_x(BC::BackgroundCosmology, x::AbstractRange)
+	return luminosity_distance_of_x(BC, collect(x))
 end
