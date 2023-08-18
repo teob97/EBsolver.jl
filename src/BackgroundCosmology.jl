@@ -13,7 +13,7 @@ eval_Ω0_Λ(Ω0_k::Float64, Ω0_B::Float64, Ω0_CDM::Float64, Ω0_γ::Float64, �
 Base.@kwdef struct BackgroundCosmology
 	
 	h       :: Float64 = 0.67
-	H0_SI	:: Float64 = h*100*(1000/3.086e22) #convert Km and Mpc into m
+	H0_SI	:: Float64 = h*100*(1000/Mpc_to_m(1.0)) #convert Km and Mpc into m
 	Ω0_B    :: Float64 = 0.05	 
 	Ω0_CDM  :: Float64 = 0.267
 	Ω0_k    :: Float64 = 0.0
