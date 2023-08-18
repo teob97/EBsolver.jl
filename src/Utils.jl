@@ -2,6 +2,7 @@ export G_SI, c_SI, k_b_SI, k_e_SI, ħ_SI, eV_SI, m_e_SI, m_H_SI, Msun_SI, σ_T_S
 export m_to_pc, m_to_Mpc
 export pc_to_m, Mpc_to_m
 export s_to_Gyr
+export x_to_redshift
 
 # SI constants
 const G_SI      = 6.67430e-11
@@ -28,3 +29,5 @@ m_to_Mpc(x) = x * 3.08567758130573e-22
 Mpc_to_m(x) = x * 3.08567758130573e22
 
 s_to_Gyr(x) = x / (1e9*365*24*60*60)
+
+x_to_redshift(x) = exp(-x) - 1 

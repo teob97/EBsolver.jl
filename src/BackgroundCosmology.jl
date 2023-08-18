@@ -24,6 +24,9 @@ Base.@kwdef struct BackgroundCosmology
 	Ω0_nu   :: Float64 = eval_Ω0_nu(N_eff, T0_CMB, H0_SI)
 	Ω0_Λ    :: Float64 = eval_Ω0_Λ(Ω0_k, Ω0_B, Ω0_CDM, Ω0_γ, Ω0_nu)
 
+	x_equality :: Float64 = log((Ω0_γ+Ω0_nu)/(Ω0_CDM+Ω0_B))
+	x_acceleration :: Float64 = 1.0/3.0 * log((Ω0_CDM+Ω0_B)/Ω0_Λ)
+
 	# We use x=log(a) where a=a(t) is the scale factor
 	x_start :: Float64 = log(exp(-12))
 	x_end   :: Float64 = log(1.0)
@@ -81,7 +84,6 @@ ddHpddx_of_x(BC::BackgroundCosmology, x::AbstractRange)		= ddHpddx_of_x(BC, coll
 Ω_nu(BC::BackgroundCosmology, x::AbstractRange)		= Ω_nu(BC, collect(x))
 Ω_k(BC::BackgroundCosmology, x::AbstractRange)		= Ω_k(BC, collect(x))
 Ω_Λ(BC::BackgroundCosmology, x::AbstractRange)		= Ω_Λ(BC, collect(x))
-
 
 function η_of_x(BC::BackgroundCosmology)::Spline.SplineInterpolation
 
