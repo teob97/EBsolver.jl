@@ -1,5 +1,6 @@
 using EBsolver
-using Test, Plots
+using BSplineKit
+using Test, Statistics
 
 @testset "BackgroundCosmology test" begin
   include("BackgroundCosmology.jl")
