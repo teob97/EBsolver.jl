@@ -2,7 +2,7 @@ export BackgroundCosmology
 export eval_ρ0_crit
 export H_of_x, Hp_of_x, dHpdx_of_x, ddHpddx_of_x
 export Ω_B, Ω_CDM, Ω_k, Ω_nu, Ω_γ, Ω_Λ
-export η_of_x
+export η_of_x, t_of_x
 export comoving_distance_of_x, angular_distance_of_x, luminosity_distance_of_x
 
 eval_ρ0_crit(H0::Float64) = (3*H0^2)/(8*π*G_SI)
@@ -131,4 +131,18 @@ function luminosity_distance_of_x(BC::BackgroundCosmology, x::Union{Float64, Vec
 end
 function luminosity_distance_of_x(BC::BackgroundCosmology, x::AbstractRange)
 	return luminosity_distance_of_x(BC, collect(x))
+end
+
+# Cosmic time as a function of x=log(a)
+function t_of_x(BC::BackgroundCosmology)
+
+	u_0 = 0.5 / H_of_x(BC, BC.x_start)
+	cosmic_time(u, p, t) = 1 / H_of_x(BC,t)
+
+	prob = ODE.ODEProblem(cosmic_time, u_0, (BC.x_start, BC.x_end))
+	f = ODE.solve(prob)
+	
+	x = range(BC.x_start, BC.x_end, BC.n_splines)
+	return Spline.interpolate(x, f(x).u, Spline.BSplineOrder(3))
+
 end
