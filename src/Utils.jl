@@ -48,7 +48,7 @@ function likelihood_chi2(data::Vector, parameters::Vector{Float64})
     Ω0_B = 0.05    
     N_eff = 0.00
 
-    setup = BackgroundCosmologySetup(
+    setup = BackgroundCosmology(
         h = parameters[1],
         Ω0_B = Ω0_B,
         Ω0_CDM = parameters[2] - Ω0_B,
