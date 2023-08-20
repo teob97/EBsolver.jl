@@ -31,13 +31,13 @@ Base.@kwdef struct BackgroundCosmologySetup
 
 end
 
-H_of_x(BC::BackgroundCosmologySetup, x::Float64)			= BC.H0_SI*sqrt((BC.Ω0_B+BC.Ω0_CDM)*exp(-3x) + (BC.Ω0_γ+BC.Ω0_nu)*exp(-4x) + BC.Ω0_k*exp(-2x) + BC.Ω0_Λ)
+H_of_x(BC::BackgroundCosmologySetup, x::Float64)			= BC.H0_SI * sqrt((BC.Ω0_B+BC.Ω0_CDM)*exp(-3x) + (BC.Ω0_γ+BC.Ω0_nu)*exp(-4x) + BC.Ω0_k*exp(-2x) + BC.Ω0_Λ)
 H_of_x(BC::BackgroundCosmologySetup, x::Vector{Float64})	= [H_of_x(BC, i) for i in x]
 H_of_x(BC::BackgroundCosmologySetup, x::AbstractRange)		= H_of_x(BC, collect(x))
 
-Hp_of_x(BC::BackgroundCosmologySetup, x::Float64)			= exp(x)*H_of_x(BC, x)
+Hp_of_x(BC::BackgroundCosmologySetup, x::Float64)			= BC.H0_SI * sqrt((BC.Ω0_B+BC.Ω0_CDM)*exp(-x) + (BC.Ω0_γ+BC.Ω0_nu)*exp(-2x) + BC.Ω0_k + BC.Ω0_Λ*exp(2x))
 Hp_of_x(BC::BackgroundCosmologySetup, x::Vector{Float64})	= [Hp_of_x(BC, i) for i in x]
-Hp_of_x(BC::BackgroundCosmologySetup, x::AbstractRange)	= Hp_of_x(BC, collect(x))
+Hp_of_x(BC::BackgroundCosmologySetup, x::AbstractRange)		= Hp_of_x(BC, collect(x))
 
 dHpdx_of_x(BC::BackgroundCosmologySetup, x::Float64)			= 0.5 * BC.H0_SI^2 * (-(BC.Ω0_B+BC.Ω0_CDM)*exp(-2x) - 2*(BC.Ω0_γ+BC.Ω0_nu)*exp(-3x) + 2*BC.Ω0_Λ*exp(x))
 dHpdx_of_x(BC::BackgroundCosmologySetup, x::Vector{Float64})	= [dHpdx_of_x(BC, i) for i in x]
@@ -47,26 +47,33 @@ ddHpddx_of_x(BC::BackgroundCosmologySetup, x::Float64)			= Hp_of_x(BC, x) * 0.5 
 ddHpddx_of_x(BC::BackgroundCosmologySetup, x::Vector{Float64})	= [ddHpddx_of_x(BC, i) for i in x]
 ddHpddx_of_x(BC::BackgroundCosmologySetup, x::AbstractRange)	= ddHpddx_of_x(BC, collect(x))
 
-Ω_B(BC::BackgroundCosmologySetup, x::Float64)::Float64		= BC.Ω0_B	* BC.H0_SI^2 / (exp(3x) * H_of_x(BC, x)^2)
-Ω_CDM(BC::BackgroundCosmologySetup, x::Float64)::Float64	= BC.Ω0_CDM	* BC.H0_SI^2 / (exp(3x) * H_of_x(BC, x)^2)
-Ω_γ(BC::BackgroundCosmologySetup, x::Float64)::Float64		= BC.Ω0_γ	* BC.H0_SI^2 / (exp(4x) * H_of_x(BC, x)^2)
-Ω_nu(BC::BackgroundCosmologySetup, x::Float64)::Float64	= BC.Ω0_nu	* BC.H0_SI^2 / (exp(4x) * H_of_x(BC, x)^2)
-Ω_k(BC::BackgroundCosmologySetup, x::Float64)::Float64		= BC.Ω0_k	* BC.H0_SI^2 / (exp(2x) * H_of_x(BC, x)^2)
-Ω_Λ(BC::BackgroundCosmologySetup, x::Float64)::Float64		= BC.Ω0_Λ	* BC.H0_SI^2 /  H_of_x(BC, x)^2
+H2_of_x(BC::BackgroundCosmologySetup, x::Float64)			= BC.H0_SI^2 * ((BC.Ω0_B+BC.Ω0_CDM)*exp(-3x) + (BC.Ω0_γ+BC.Ω0_nu)*exp(-4x) + BC.Ω0_k*exp(-2x) + BC.Ω0_Λ)
+H2_of_x(BC::BackgroundCosmologySetup, x::Vector{Float64})	= [H_of_x(BC, i) for i in x]
+H2_of_x(BC::BackgroundCosmologySetup, x::AbstractRange)		= H_of_x(BC, collect(x))
+
+Ω_B(BC::BackgroundCosmologySetup, x::Float64)::Float64		= BC.Ω0_B	* BC.H0_SI^2 / (exp(3x) * H2_of_x(BC, x))
+Ω_CDM(BC::BackgroundCosmologySetup, x::Float64)::Float64	= BC.Ω0_CDM	* BC.H0_SI^2 / (exp(3x) * H2_of_x(BC, x))
+Ω_γ(BC::BackgroundCosmologySetup, x::Float64)::Float64		= BC.Ω0_γ	* BC.H0_SI^2 / (exp(4x) * H2_of_x(BC, x))
+Ω_nu(BC::BackgroundCosmologySetup, x::Float64)::Float64		= BC.Ω0_nu	* BC.H0_SI^2 / (exp(4x) * H2_of_x(BC, x))
+Ω_k(BC::BackgroundCosmologySetup, x::Float64)::Float64		= BC.Ω0_k	* BC.H0_SI^2 / (exp(2x) * H2_of_x(BC, x))
+Ω_Λ(BC::BackgroundCosmologySetup, x::Float64)::Float64		= BC.Ω0_Λ	* BC.H0_SI^2 /  H2_of_x(BC, x)
 
 Ω_B(BC::BackgroundCosmologySetup, x::Vector{Float64})		= [Ω_B(BC, i) for i in x]
-Ω_CDM(BC::BackgroundCosmologySetup, x::Vector{Float64})	= [Ω_CDM(BC, i) for i in x]
+Ω_CDM(BC::BackgroundCosmologySetup, x::Vector{Float64})		= [Ω_CDM(BC, i) for i in x]
 Ω_γ(BC::BackgroundCosmologySetup, x::Vector{Float64})		= [Ω_γ(BC, i) for i in x]
 Ω_nu(BC::BackgroundCosmologySetup, x::Vector{Float64})		= [Ω_nu(BC, i) for i in x]
 Ω_k(BC::BackgroundCosmologySetup, x::Vector{Float64})		= [Ω_k(BC, i) for i in x]
 Ω_Λ(BC::BackgroundCosmologySetup, x::Vector{Float64})		= [Ω_Λ(BC, i) for i in x]
 
 Ω_B(BC::BackgroundCosmologySetup, x::AbstractRange)		= Ω_B(BC, collect(x))
-Ω_CDM(BC::BackgroundCosmologySetup, x::AbstractRange)		= Ω_CDM(BC, collect(x))	
+Ω_CDM(BC::BackgroundCosmologySetup, x::AbstractRange)	= Ω_CDM(BC, collect(x))	
 Ω_γ(BC::BackgroundCosmologySetup, x::AbstractRange)		= Ω_γ(BC, collect(x))
-Ω_nu(BC::BackgroundCosmologySetup, x::AbstractRange)		= Ω_nu(BC, collect(x))
+Ω_nu(BC::BackgroundCosmologySetup, x::AbstractRange)	= Ω_nu(BC, collect(x))
 Ω_k(BC::BackgroundCosmologySetup, x::AbstractRange)		= Ω_k(BC, collect(x))
 Ω_Λ(BC::BackgroundCosmologySetup, x::AbstractRange)		= Ω_Λ(BC, collect(x))
+
+export Ω_tot
+Ω_tot(BC::BackgroundCosmologySetup, x::Union{Float64, Vector{Float64}}) = Ω_B(BC,x) + Ω_CDM(BC,x) + Ω_k(BC,x) + Ω_nu(BC,x) + Ω_γ(BC,x) + Ω_Λ(BC,x)
 
 function η_of_x(BC::BackgroundCosmologySetup)::Spline.SplineInterpolation
 
@@ -74,7 +81,21 @@ function η_of_x(BC::BackgroundCosmologySetup)::Spline.SplineInterpolation
 	conformal_time(u, p, t) = c_SI / Hp_of_x(BC,t)
 
 	prob = ODE.ODEProblem(conformal_time, u_0, (BC.x_start, BC.x_end))
-	f = ODE.solve(prob)
+	f = ODE.solve(prob, ODE.Tsit5())
+	
+	x = range(BC.x_start, BC.x_end, BC.n_splines)
+	return Spline.interpolate(x, f(x).u, Spline.BSplineOrder(3))
+
+end
+
+# Cosmic time as a function of x=log(a)
+function t_of_x(BC::BackgroundCosmologySetup)::Spline.SplineInterpolation
+
+	u_0 = 0.5 / H_of_x(BC, BC.x_start)
+	cosmic_time(u, p, t) = 1.0 / H_of_x(BC,t)
+
+	prob = ODE.ODEProblem(cosmic_time, u_0, (BC.x_start, BC.x_end))
+	f = ODE.solve(prob, ODE.Tsit5())
 	
 	x = range(BC.x_start, BC.x_end, BC.n_splines)
 	return Spline.interpolate(x, f(x).u, Spline.BSplineOrder(3))
@@ -118,20 +139,6 @@ function luminosity_distance_of_x(BC::BackgroundCosmologySetup, x::AbstractRange
 	return luminosity_distance_of_x(BC, collect(x))
 end
 
-# Cosmic time as a function of x=log(a)
-function t_of_x(BC::BackgroundCosmologySetup)::Spline.SplineInterpolation
-
-	u_0 = 0.5 / H_of_x(BC, BC.x_start)
-	cosmic_time(u, p, t) = 1 / H_of_x(BC,t)
-
-	prob = ODE.ODEProblem(cosmic_time, u_0, (BC.x_start, BC.x_end))
-	f = ODE.solve(prob)
-	
-	x = range(BC.x_start, BC.x_end, BC.n_splines)
-	return Spline.interpolate(x, f(x).u, Spline.BSplineOrder(3))
-
-end
-
 struct BackgroundCosmology
 	
 	setup::BackgroundCosmologySetup
@@ -155,10 +162,10 @@ struct BackgroundCosmology
 	η_of_x::Spline.SplineInterpolation
 	t_of_x::Spline.SplineInterpolation
 
-	x_equality :: Float64
-	x_acceleration :: Float64
+	a_equality :: Float64
+	a_acceleration :: Float64
 
-	BackgroundCosmology(BC::BackgroundCosmologySetup) = new(
+	BackgroundCosmology(BC::BackgroundCosmologySetup = BackgroundCosmologySetup()) = new(
 		BC,
 		x -> H_of_x(BC, x),
 		x -> Hp_of_x(BC, x),
@@ -175,8 +182,8 @@ struct BackgroundCosmology
 		x -> luminosity_distance_of_x(BC, x),
 		η_of_x(BC),
 		t_of_x(BC),
-		log((BC.Ω0_γ+BC.Ω0_nu)/(BC.Ω0_CDM+BC.Ω0_B)),
-		1.0/3.0 * log((BC.Ω0_CDM+BC.Ω0_B)/BC.Ω0_Λ)
+		(BC.Ω0_γ+BC.Ω0_nu)/(BC.Ω0_CDM+BC.Ω0_B),
+		cbrt((BC.Ω0_CDM+BC.Ω0_B)/BC.Ω0_Λ)
 	)
 
 end

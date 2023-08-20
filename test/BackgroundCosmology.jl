@@ -7,6 +7,9 @@ T_test = 2.7255
 @test isapprox(eval_ρ0_crit(h_test*100*(1000/3.086e22)), 1.878e-26 * h_test^2; rtol=1e-4)
 @test isapprox(BackgroundCosmologySetup(h = h_test, T0_CMB = T_test).Ω0_γ, 2.47e-5 / h_test^2; rtol=1e-2)
 
+# Test cosmological parameters
+
+
 # η'(x) * Hp(x) / c must be ≈ 1
 bc = BackgroundCosmology(BackgroundCosmologySetup())
 x = range(bc.setup.x_start, bc.setup.x_end, bc.setup.n_splines)
