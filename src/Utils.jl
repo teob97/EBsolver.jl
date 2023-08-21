@@ -62,7 +62,7 @@ function likelihood_chi2(data::Vector, parameters::Vector{Float64})
     return  sum((d_l - d_l_obs).^2 ./ sigma.^2)
 end
 
-function mcmc_fit_to_supernova_data(path_to_sn_data::String, likelihood::Function = likelihood_chi2, max_step::Int = 30000)
+function mcmc_fit_to_supernova_data(path_to_sn_data::String; likelihood::Function = likelihood_chi2, max_step::Int = 20000)
 
     # Load data
     file_stream = open(path_to_sn_data, "r")

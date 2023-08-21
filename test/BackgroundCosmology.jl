@@ -8,13 +8,13 @@ T_test = 2.7255
 @test isapprox(BackgroundCosmology(h = h_test, T0_CMB = T_test).Ω0_γ, 2.47e-5 / h_test^2; rtol=1e-2)
 
 # Test cosmological parameters
-
-
-# η'(x) * Hp(x) / c must be ≈ 1
 bc = BackgroundCosmology()
 x = range(bc.x_start, bc.x_end, bc.n_splines)
-eta_derivative = BSplineKit.diff(η_of_x(bc))
-@test isapprox(mean(eta_derivative.(x).*Hp_of_x(bc, x)/c_SI), 1.0, rtol=1e-5)
+@test all(Ω_tot(bc, collect(x)) .≈ 1)
+
+# η'(x) * Hp(x) / c must be ≈ 1
+eta_derivative = η_of_x(bc)(collect(x), Val{1}).u
+@test isapprox(mean(eta_derivative .* Hp_of_x(bc, x) / c_SI), 1.0, rtol=1e-5)
 
 # Analitically, for a fluid with EoS P=wρ we have Hp'/Hp = d[log(Hp)]/dt = - [(1+3w) / 2] H(t)
 # Einstein–de Sitter universe (only matter with w=0) 

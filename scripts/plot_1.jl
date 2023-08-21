@@ -48,8 +48,8 @@ let
 
     x1 = range(-20, 5, bc.n_splines)
     p4 = plot(x1, Ω_B(bc, x1)+Ω_CDM(bc, x1), label = "Matter", style=:dash, legend=:left, linewidth=2, xlabel="x=log(a)")
-    plot!(x1, Ω_γ(bc, x1)+Ω_nu(bc, x1), label = "Radiation", style=:dashdot)
-    plot!(x1, Ω_Λ(bc, x1), label = "Lambda")
+    plot!(x1, Ω_γ(bc, x1)+Ω_nu(bc, x1), label = "Radiation", style=:dashdot, linewidth=2,)
+    plot!(x1, Ω_Λ(bc, x1), label = "Lambda", linewidth=2,)
 
     @info "Start mcmc simulation"
 

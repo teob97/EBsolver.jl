@@ -75,37 +75,33 @@ H2_of_x(BC::BackgroundCosmology, x::AbstractRange)		= H_of_x(BC, collect(x))
 export Ω_tot
 Ω_tot(BC::BackgroundCosmology, x::Union{Float64, Vector{Float64}}) = Ω_B(BC,x) + Ω_CDM(BC,x) + Ω_k(BC,x) + Ω_nu(BC,x) + Ω_γ(BC,x) + Ω_Λ(BC,x)
 
-function η_of_x(BC::BackgroundCosmology)::Spline.SplineInterpolation
+function η_of_x(BC::BackgroundCosmology)
 
 	u_0 = c_SI / Hp_of_x(BC, BC.x_start)
 	conformal_time(u, p, t) = c_SI / Hp_of_x(BC,t)
 
 	prob = ODE.ODEProblem(conformal_time, u_0, (BC.x_start, BC.x_end))
-	f = ODE.solve(prob, ODE.Tsit5(), verbose = false)
 	
-	x = range(BC.x_start, BC.x_end, BC.n_splines)
-	return Spline.interpolate(x, f(x).u, Spline.BSplineOrder(3))
-
+	return ODE.solve(prob, ODE.Tsit5(), verbose = false)
+	
 end
 
 # Cosmic time as a function of x=log(a)
-function t_of_x(BC::BackgroundCosmology)::Spline.SplineInterpolation
+function t_of_x(BC::BackgroundCosmology)
 
 	u_0 = 0.5 / H_of_x(BC, BC.x_start)
 	cosmic_time(u, p, t) = 1.0 / H_of_x(BC,t)
 
 	prob = ODE.ODEProblem(cosmic_time, u_0, (BC.x_start, BC.x_end))
-	f = ODE.solve(prob, ODE.Tsit5(), verbose=false)
 	
-	x = range(BC.x_start, BC.x_end, BC.n_splines)
-	return Spline.interpolate(x, f(x).u, Spline.BSplineOrder(3))
+	return ODE.solve(prob, ODE.Tsit5(), verbose=false)
 
 end
 
 function comoving_distance_of_x(BC::BackgroundCosmology, x::Union{Float64, Vector{Float64}})
 	η = η_of_x(BC)
 	# Rember that we are working with x=log(a) where a is the scale factor
-	return η(log(1.0)) .- η.(x)
+	return η(log(1.0)) .- η(x)
 end
 function comoving_distance_of_x(BC::BackgroundCosmology, x::AbstractRange)
 	return comoving_distance_of_x(BC, collect(x))
