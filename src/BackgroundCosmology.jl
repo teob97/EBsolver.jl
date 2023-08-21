@@ -1,5 +1,5 @@
 export BackgroundCosmology, BackgroundCosmology
-export eval_ρ0_crit
+export eval_ρ0_crit, eval_Ω0_γ, eval_Ω0_nu
 export H_of_x, Hp_of_x, dHpdx_of_x, ddHpddx_of_x
 export Ω_B, Ω_CDM, Ω_k, Ω_nu, Ω_γ, Ω_Λ
 export η_of_x, t_of_x
@@ -31,11 +31,11 @@ Base.@kwdef struct BackgroundCosmology
 
 end
 
-H_of_x(BC::BackgroundCosmology, x::Float64)			= BC.H0_SI * sqrt((BC.Ω0_B+BC.Ω0_CDM)*exp(-3x) + (BC.Ω0_γ+BC.Ω0_nu)*exp(-4x) + BC.Ω0_k*exp(-2x) + BC.Ω0_Λ)
+H_of_x(BC::BackgroundCosmology, x::Float64)			= BC.H0_SI * NaNMath.sqrt((BC.Ω0_B+BC.Ω0_CDM)*exp(-3x) + (BC.Ω0_γ+BC.Ω0_nu)*exp(-4x) + BC.Ω0_k*exp(-2x) + BC.Ω0_Λ)
 H_of_x(BC::BackgroundCosmology, x::Vector{Float64})	= [H_of_x(BC, i) for i in x]
 H_of_x(BC::BackgroundCosmology, x::AbstractRange)		= H_of_x(BC, collect(x))
 
-Hp_of_x(BC::BackgroundCosmology, x::Float64)			= BC.H0_SI * sqrt((BC.Ω0_B+BC.Ω0_CDM)*exp(-x) + (BC.Ω0_γ+BC.Ω0_nu)*exp(-2x) + BC.Ω0_k + BC.Ω0_Λ*exp(2x))
+Hp_of_x(BC::BackgroundCosmology, x::Float64)			= BC.H0_SI * NaNMath.sqrt((BC.Ω0_B+BC.Ω0_CDM)*exp(-x) + (BC.Ω0_γ+BC.Ω0_nu)*exp(-2x) + BC.Ω0_k + BC.Ω0_Λ*exp(2x))
 Hp_of_x(BC::BackgroundCosmology, x::Vector{Float64})	= [Hp_of_x(BC, i) for i in x]
 Hp_of_x(BC::BackgroundCosmology, x::AbstractRange)		= Hp_of_x(BC, collect(x))
 
@@ -81,7 +81,7 @@ function η_of_x(BC::BackgroundCosmology)::Spline.SplineInterpolation
 	conformal_time(u, p, t) = c_SI / Hp_of_x(BC,t)
 
 	prob = ODE.ODEProblem(conformal_time, u_0, (BC.x_start, BC.x_end))
-	f = ODE.solve(prob, ODE.Tsit5())
+	f = ODE.solve(prob, ODE.Tsit5(), verbose = false)
 	
 	x = range(BC.x_start, BC.x_end, BC.n_splines)
 	return Spline.interpolate(x, f(x).u, Spline.BSplineOrder(3))
@@ -95,7 +95,7 @@ function t_of_x(BC::BackgroundCosmology)::Spline.SplineInterpolation
 	cosmic_time(u, p, t) = 1.0 / H_of_x(BC,t)
 
 	prob = ODE.ODEProblem(cosmic_time, u_0, (BC.x_start, BC.x_end))
-	f = ODE.solve(prob, ODE.Tsit5())
+	f = ODE.solve(prob, ODE.Tsit5(), verbose=false)
 	
 	x = range(BC.x_start, BC.x_end, BC.n_splines)
 	return Spline.interpolate(x, f(x).u, Spline.BSplineOrder(3))
@@ -142,15 +142,15 @@ end
 Base.show(io::IO, BC::BackgroundCosmology) = print(
 	io, 
 	"Info about cosmology class:\n",
-	"Ω0_B:\t\t", 	BC.setup.Ω0_B,"\n",
-	"Ω0_CDM:\t\t", 	BC.setup.Ω0_CDM,"\n",
-	"Ω0_Λ:\t\t", 	BC.setup.Ω0_Λ,"\n",
-	"Ω0_K:\t\t", 	BC.setup.Ω0_k,"\n",
-	"Ω0_nu:\t\t", 	BC.setup.Ω0_nu,"\n",
-	"Ω0_γ:\t\t", 	BC.setup.Ω0_γ,"\n",
-	"N_eff:\t\t", 	BC.setup.N_eff,"\n",
-	"h:\t\t", 		BC.setup.h,"\n",
-	"T0_CMB:\t\t", 	BC.setup.T0_CMB,"\n",
-	"a_equality:\t\t", (BC.Ω0_γ+BC.Ω0_nu)/(BC.Ω0_CDM+BC.Ω0_B),"\n",
-	"a__acceleration:\t\t", cbrt((BC.Ω0_CDM+BC.Ω0_B)/BC.Ω0_Λ)
+	"Ω0_B:\t\t", 	BC.Ω0_B,"\n",
+	"Ω0_CDM:\t\t", 	BC.Ω0_CDM,"\n",
+	"Ω0_Λ:\t\t", 	BC.Ω0_Λ,"\n",
+	"Ω0_K:\t\t", 	BC.Ω0_k,"\n",
+	"Ω0_nu:\t\t", 	BC.Ω0_nu,"\n",
+	"Ω0_γ:\t\t", 	BC.Ω0_γ,"\n",
+	"N_eff:\t\t", 	BC.N_eff,"\n",
+	"h:\t\t", 		BC.h,"\n",
+	"T0_CMB:\t\t", 	BC.T0_CMB,"\n",
+	"a_equality:\t", (BC.Ω0_γ+BC.Ω0_nu)/(BC.Ω0_CDM+BC.Ω0_B),"\n",
+	"a_acceleration:\t", cbrt((BC.Ω0_CDM+BC.Ω0_B)/BC.Ω0_Λ)
 )
