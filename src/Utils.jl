@@ -18,6 +18,7 @@ const Msun_SI   = 1.98847e30
 const σ_T_SI    = 6.6524587158e-29
 const λ_2s1s_SI = 8.227
 const ϵ0_eV     = 13.605693122994
+const ϵ0_SI     = ϵ0_eV * eV_SI
 const ξ0_eV     = 24.587387
 const ξ1_eV     = 4.0 * ξ0_eV
 const pc_SI     = 3.08567758e16

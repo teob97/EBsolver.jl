@@ -7,5 +7,6 @@ import NaNMath
 
 include("Utils.jl")
 include("BackgroundCosmology.jl")
+include("RecombinationHistory.jl")
 
 end # module EBsolver
