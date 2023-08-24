@@ -20,7 +20,9 @@ const λ_2s1s_SI = 8.227
 const ϵ0_eV     = 13.605693122994
 const ϵ0_SI     = ϵ0_eV * eV_SI
 const ξ0_eV     = 24.587387
+const ξ0_SI     = ξ0_eV * eV_SI
 const ξ1_eV     = 4.0 * ξ0_eV
+const ξ1_SI     = ξ1_eV * eV_SI
 const pc_SI     = 3.08567758e16
 
 # Conversions
