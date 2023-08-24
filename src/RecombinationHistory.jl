@@ -166,3 +166,15 @@ function n_e_of_x(RH::RecombinationHistory, reionization::Bool = true)
     return Spline.interpolate(x, ne, Spline.BSplineOrder(4))
 
 end
+
+function τ_of_x(RH::RecombinationHistory, reionization = true)
+
+    u_0 = 0.0
+
+	rhs(u, p, t) = - σ_T_SI * c_SI * n_e_of_x(RH, reionization)(t) / H_of_x(RH.cosmo, t)
+
+	prob = ODE.ODEProblem(rhs, u_0, (RH.x_end, RH.x_start))
+	
+	return ODE.solve(prob, ODE.Tsit5(), verbose = false)
+
+end
