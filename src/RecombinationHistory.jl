@@ -2,7 +2,7 @@ export RecombinationHistory
 export Xe_saha_equation, Xe_saha_equation_with_He
 export Xe_peebles_equation
 export Xe_of_x, Xe_reion_of_x
-export n_e_of_x
+export n_e_of_x, τ_of_x
 
 Base.@kwdef struct RecombinationHistory
 
@@ -119,7 +119,7 @@ function Xe_of_x(RH::RecombinationHistory)
     x_limit =  x[indx_limit]
     peebles = Xe_peebles_equation(RH,x_limit)(x[indx_limit:end])
 
-    Xe = [saha[mask];peebles]
+    Xe = [saha[begin:indx_limit-1];peebles]
     
     return Spline.interpolate(x, Xe, Spline.BSplineOrder(4))
 
@@ -142,7 +142,7 @@ function Xe_reion_of_x(RH::RecombinationHistory)
     correction_He = [0.5 * f_He * (1+tanh((RH.z_He_reion - x_to_redshift(i) )/RH.Δz_He_reion)) for i in x[indx_limit:end]]
     peebles = Xe_peebles_equation(RH,x_limit)(x[indx_limit:end]) .+ correction_H .+ correction_He
 
-    Xe = [saha[mask];peebles]
+    Xe = [saha[begin:indx_limit-1];peebles]
     
     return Spline.interpolate(x, Xe, Spline.BSplineOrder(4))
 
