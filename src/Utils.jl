@@ -1,4 +1,3 @@
-export G_SI, c_SI, k_b_SI, k_e_SI, ħ_SI, eV_SI, m_e_SI, m_H_SI, Msun_SI, σ_T_SI, λ_2s1s_SI, ϵ0_eV, ξ0_eV, ξ1_eV, pc_SI
 export m_to_pc, m_to_Mpc, m_to_Gpc
 export pc_to_m, Mpc_to_m, Gpc_to_m
 export s_to_Gyr
@@ -24,6 +23,7 @@ const ξ0_SI     = ξ0_eV * eV_SI
 const ξ1_eV     = 4.0 * ξ0_eV
 const ξ1_SI     = ξ1_eV * eV_SI
 const pc_SI     = 3.08567758e16
+const fine_structure = 1.0/137.0359992
 
 # Conversions
 m_to_pc(x)  = x * 3.08567758130573e-16

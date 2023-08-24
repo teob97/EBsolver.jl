@@ -1,7 +1,7 @@
 export BackgroundCosmology, BackgroundCosmology
 export eval_ρ0_crit, eval_Ω0_γ, eval_Ω0_nu
 export H_of_x, Hp_of_x, dHpdx_of_x, ddHpddx_of_x
-export Ω_B, Ω_CDM, Ω_k, Ω_nu, Ω_γ, Ω_Λ
+export Ω_B, Ω_CDM, Ω_k, Ω_nu, Ω_γ, Ω_Λ, Ω_tot
 export η_of_x, t_of_x
 export comoving_distance_of_x, angular_distance_of_x, luminosity_distance_of_x
 
@@ -72,7 +72,6 @@ H2_of_x(BC::BackgroundCosmology, x::AbstractRange)		= H_of_x(BC, collect(x))
 Ω_k(BC::BackgroundCosmology, x::AbstractRange)		= Ω_k(BC, collect(x))
 Ω_Λ(BC::BackgroundCosmology, x::AbstractRange)		= Ω_Λ(BC, collect(x))
 
-export Ω_tot
 Ω_tot(BC::BackgroundCosmology, x::Union{Float64, Vector{Float64}}) = Ω_B(BC,x) + Ω_CDM(BC,x) + Ω_k(BC,x) + Ω_nu(BC,x) + Ω_γ(BC,x) + Ω_Λ(BC,x)
 
 function η_of_x(BC::BackgroundCosmology)
