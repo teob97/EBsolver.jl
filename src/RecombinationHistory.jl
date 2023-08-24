@@ -2,6 +2,7 @@ export RecombinationHistory
 export Xe_saha_equation, Xe_saha_equation_with_He
 export Xe_peebles_equation
 export Xe_of_x, Xe_reion_of_x
+export n_e_of_x
 
 Base.@kwdef struct RecombinationHistory
 
@@ -144,5 +145,24 @@ function Xe_reion_of_x(RH::RecombinationHistory)
     Xe = [saha[mask];peebles]
     
     return Spline.interpolate(x, Xe, Spline.BSplineOrder(4))
+
+end
+
+function n_e_of_x(RH::RecombinationHistory, reionization::Bool = true)
+
+    if reionization
+        Xe = Xe_reion_of_x(RH)
+    else
+        Xe = Xe_of_x(RH)
+    end
+
+    n_b(x) = RH.cosmo.Ω0_B * eval_ρ0_crit(RH.cosmo.H0_SI) * exp(-3x) / m_H_SI
+    n_H(x) = (1 - RH.Yp) * n_b(x)
+
+    x = range(RH.x_start, RH.x_end, RH.npts_rec_arrays)
+
+    ne = [Xe(i)*n_H(i) for i in x]
+
+    return Spline.interpolate(x, ne, Spline.BSplineOrder(4))
 
 end
