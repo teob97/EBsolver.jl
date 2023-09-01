@@ -2,7 +2,9 @@ export RecombinationHistory
 export Xe_saha_equation, Xe_saha_equation_with_He
 export Xe_peebles_equation
 export Xe_of_x, Xe_reion_of_x
-export n_e_of_x, τ_of_x
+export n_e_of_x
+export τ_of_x, dτdx_of_x, ddτddx_of_x
+export visibility_function_of_x
 
 Base.@kwdef struct RecombinationHistory
 
@@ -42,29 +44,29 @@ end
 
 function Xe_saha_equation_with_He(RH::RecombinationHistory, x::Float64)
     
-    f_e = abs((randn() * 0.05) + 1)
-    f_e_new = Inf64
+    f_e = 1.0
+    f_e_new = 1.0
     diff = Inf64
 
     # rhs os Saha's equations
     k1, k2, k3 = 0.0, 0.0, 0.0
 
-    n_b :: Float64 = RH.cosmo.Ω0_B * eval_ρ0_crit(RH.cosmo.H0_SI) * exp(-3x) / m_H_SI
+    n_b = RH.cosmo.Ω0_B * eval_ρ0_crit(RH.cosmo.H0_SI) * exp(-3x) / m_H_SI
     T_b = RH.cosmo.T0_CMB * exp(-x)
     a = (m_e_SI * k_b_SI * T_b / 2π)^(3/2)
 
-    while diff>1e-10
+    while diff>1e-5
 
-        k1 = 2 * 1/(f_e*n_b*ħ_SI^3) * a * exp(-ξ0_SI/(k_b_SI*T_b))
-        k2 = 4 * 1/(f_e*n_b*ħ_SI^3) * a * exp(-ξ1_SI/(k_b_SI*T_b))
-        k3 = 1/(f_e*n_b*ħ_SI^3) * a * exp(-ϵ0_SI/(k_b_SI*T_b))
+        k1 = 2.0/(f_e*n_b*ħ_SI^3) * a * exp(-ξ0_SI/(k_b_SI*T_b))
+        k2 = 4.0/(f_e*n_b*ħ_SI^3) * a * exp(-ξ1_SI/(k_b_SI*T_b))
+        k3 = 1.0/(f_e*n_b*ħ_SI^3) * a * exp(-ϵ0_SI/(k_b_SI*T_b))
 
         X_H1 = k3 / (1 + k3)
         X_He1 = k1 / (1 + k1 + k1*k2)
         X_He2 = k1 * k2 / (1 + k1 + k1*k2)
 
         f_e_new = (2X_He2 + X_He1)*RH.Yp/4 + X_H1*(1-RH.Yp)
-        diff = f_e_new - f_e
+        diff = abs(f_e_new - f_e)
         f_e = f_e_new
 
     end
@@ -114,8 +116,7 @@ function Xe_of_x(RH::RecombinationHistory)
     x = range(RH.x_start, RH.x_end, RH.npts_rec_arrays)
     saha = [Xe_saha_equation_with_He(RH, i) for i in x]
 
-    mask = findall(x -> x>RH.Xe_saha_limit, saha)
-    indx_limit = pop!(mask)
+    indx_limit = first(findall(x -> x<RH.Xe_saha_limit, saha))
     x_limit =  x[indx_limit]
     peebles = Xe_peebles_equation(RH,x_limit)(x[indx_limit:end])
 
@@ -130,8 +131,7 @@ function Xe_reion_of_x(RH::RecombinationHistory)
     x = range(RH.x_start, RH.x_end, RH.npts_rec_arrays)
     saha = [Xe_saha_equation_with_He(RH, i) for i in x]
 
-    mask = findall(x -> x>RH.Xe_saha_limit, saha)
-    indx_limit = pop!(mask)
+    indx_limit = first(findall(x -> x<RH.Xe_saha_limit, saha))
     x_limit =  x[indx_limit]
 
     # Reionization correction
@@ -157,7 +157,7 @@ function n_e_of_x(RH::RecombinationHistory, reionization::Bool = true)
     end
 
     n_b(x) = RH.cosmo.Ω0_B * eval_ρ0_crit(RH.cosmo.H0_SI) * exp(-3x) / m_H_SI
-    n_H(x) = (1 - RH.Yp) * n_b(x)
+    n_H(x) = (1.0 - RH.Yp) * n_b(x)
 
     x = range(RH.x_start, RH.x_end, RH.npts_rec_arrays)
 
@@ -167,14 +167,39 @@ function n_e_of_x(RH::RecombinationHistory, reionization::Bool = true)
 
 end
 
-function τ_of_x(RH::RecombinationHistory, reionization = true)
+function τ_of_x(RH::RecombinationHistory, reionization::Bool = true)
 
     u_0 = 0.0
+    n_e = n_e_of_x(RH, reionization)
 
-	rhs(u, p, t) = - σ_T_SI * c_SI * n_e_of_x(RH, reionization)(t) / H_of_x(RH.cosmo, t)
+	rhs(u, p, t) = - σ_T_SI * c_SI * n_e(t) / H_of_x(RH.cosmo, t)
 
 	prob = ODE.ODEProblem(rhs, u_0, (RH.x_end, RH.x_start))
 	
-	return ODE.solve(prob, ODE.Tsit5(), verbose = false)
+	f = ODE.solve(prob, ODE.Tsit5(), verbose = false, alg_hints = [:interpolant])
+
+    x = range(RH.x_start, RH.x_end, RH.npts_rec_arrays)
+
+    return Spline.interpolate(x, f(x), Spline.BSplineOrder(4))
+
+end
+
+function dτdx_of_x(RH::RecombinationHistory, reionization::Bool = true)
+    x = range(RH.x_start, -1e-2, RH.npts_rec_arrays)
+    n_e = n_e_of_x(RH, reionization)
+    dτ = [- σ_T_SI * c_SI * n_e(t) / H_of_x(RH.cosmo, t) for t  in x]
+    return interpolate(x, dτ, BSplineOrder(4))
+end
+
+function visibility_function_of_x(RH::RecombinationHistory, reonization::Bool = true)
+
+    τ = τ_of_x(RH, reonization)
+    τ_derivative = Spline.diff(τ)
+
+    g(x) = -τ_derivative(x)*exp(-τ(x))
+
+    x = range(RH.x_start, RH.x_end, RH.npts_rec_arrays)
+
+    return Spline.interpolate(x, g.(x), Spline.BSplineOrder(4))
 
 end
