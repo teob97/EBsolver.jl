@@ -85,7 +85,7 @@ function rhs_peebles_equation(RH::RecombinationHistory, Xe, x::Float64)
     n_H = (1 - RH.Yp)*n_b
     n_1s = (1 - Xe)*n_H
 
-    Λ_α = H/8π^2 * 1/(n_1s*ħ_SI^3) * (2*ϵ0_SI/c_SI)^2
+    Λ_α = H/8π^2 * (n_1s*ħ_SI^3)^(-1) * (2*ϵ0_SI/c_SI)^2
     Λ_2s_1s = 8.227
 
     φ_2 = 0.448 * log(ϵ0_SI/(k_b_SI*T_b))
@@ -176,7 +176,7 @@ function τ_of_x(RH::RecombinationHistory, reionization::Bool = true)
 
 	prob = ODE.ODEProblem(rhs, u_0, (RH.x_end, RH.x_start))
 	
-	f = ODE.solve(prob, ODE.Tsit5(), verbose = false, alg_hints = [:interpolant])
+	f = ODE.solve(prob, ODE.Tsit5(), verbose = false)
 
     x = range(RH.x_start, RH.x_end, RH.npts_rec_arrays)
 
@@ -188,13 +188,13 @@ function dτdx_of_x(RH::RecombinationHistory, reionization::Bool = true)
     x = range(RH.x_start, -1e-2, RH.npts_rec_arrays)
     n_e = n_e_of_x(RH, reionization)
     dτ = [- σ_T_SI * c_SI * n_e(t) / H_of_x(RH.cosmo, t) for t  in x]
-    return interpolate(x, dτ, BSplineOrder(4))
+    return Spline.interpolate(x, dτ, Spline.BSplineOrder(4))
 end
 
 function visibility_function_of_x(RH::RecombinationHistory, reonization::Bool = true)
 
     τ = τ_of_x(RH, reonization)
-    τ_derivative = Spline.diff(τ)
+    τ_derivative = dτdx_of_x(RH, reonization)
 
     g(x) = -τ_derivative(x)*exp(-τ(x))
 

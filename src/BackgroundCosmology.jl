@@ -1,4 +1,4 @@
-export BackgroundCosmology, BackgroundCosmology
+export BackgroundCosmology
 export eval_ρ0_crit, eval_Ω0_γ, eval_Ω0_nu
 export H_of_x, Hp_of_x, dHpdx_of_x, ddHpddx_of_x
 export Ω_B, Ω_CDM, Ω_k, Ω_nu, Ω_γ, Ω_Λ, Ω_tot
