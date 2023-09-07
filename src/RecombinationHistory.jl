@@ -22,7 +22,7 @@ Base.@kwdef struct RecombinationHistory
     x_start :: Float64 = cosmo.x_start
     x_end :: Float64 = cosmo.x_end
     # Numbers of points of Xe,ne array
-    npts_rec_arrays :: Int64 = 4000
+    npts_rec_arrays :: Int64 = 1500
 
     # Limit for when to switch between Saha and Peebles
     Xe_saha_limit :: Float64 = 0.99
@@ -185,10 +185,16 @@ function τ_of_x(RH::RecombinationHistory, reionization::Bool = true)
 end
 
 function dτdx_of_x(RH::RecombinationHistory, reionization::Bool = true)
-    x = range(RH.x_start, -1e-2, RH.npts_rec_arrays)
+    x = range(RH.x_start, RH.x_end, RH.npts_rec_arrays)
     n_e = n_e_of_x(RH, reionization)
-    dτ = [- σ_T_SI * c_SI * n_e(t) / H_of_x(RH.cosmo, t) for t  in x]
+    dτ = [- σ_T_SI * c_SI * n_e(t) / H_of_x(RH.cosmo, t) for t in x]
     return Spline.interpolate(x, dτ, Spline.BSplineOrder(4))
+end
+
+function ddτddx_of_x(RH::RecombinationHistory, reionization::Bool = true)
+    x = range(RH.x_start, RH.x_end, RH.npts_rec_arrays)
+    dτ = dτdx_of_x(RH, reionization)
+    return Spline.interpolate(x, diff(dτ).(x), Spline.BSplineOrder(4))
 end
 
 function visibility_function_of_x(RH::RecombinationHistory, reonization::Bool = true)
