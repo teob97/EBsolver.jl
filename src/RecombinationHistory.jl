@@ -5,6 +5,7 @@ export Xe_of_x, Xe_reion_of_x
 export n_e_of_x
 export τ_of_x, dτdx_of_x, ddτddx_of_x
 export visibility_function_of_x
+export sound_horizon
 
 Base.@kwdef struct RecombinationHistory
 
@@ -208,4 +209,21 @@ function visibility_function_of_x(RH::RecombinationHistory, reonization::Bool = 
 
     return Spline.interpolate(x, g.(x), Spline.BSplineOrder(4))
 
+end
+
+function sound_horizon(RH::RecombinationHistory)
+    R(x) = (4.0 * RH.cosmo.Ω0_γ) / (3.0 * RH.cosmo.Ω0_B * exp(x))
+    c_s(x) = c_SI * sqrt(R(x)/(3.0*(R(x)+1)))
+
+    s_0 = c_s(RH.x_start) / Hp_of_x(RH.cosmo, RH.x_start)
+
+    rhs(u, p, t) = c_s(t) / Hp_of_x(RH.cosmo, t)
+
+	prob = ODE.ODEProblem(rhs, s_0, (RH.x_start, RH.x_end))
+	
+	f = ODE.solve(prob, ODE.Tsit5(), verbose = false)
+
+    x = range(RH.x_start, RH.x_end, RH.npts_rec_arrays)
+
+    return Spline.interpolate(x, f(x), Spline.BSplineOrder(4))
 end
