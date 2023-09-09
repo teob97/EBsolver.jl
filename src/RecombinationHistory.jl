@@ -1,7 +1,7 @@
 export RecombinationHistory
 export Xe_saha_equation, Xe_saha_equation_with_He
 export Xe_peebles_equation
-export Xe_of_x, Xe_reion_of_x
+export Xe_of_x
 export n_e_of_x
 export τ_of_x, dτdx_of_x, ddτddx_of_x
 export visibility_function_of_x
@@ -112,7 +112,7 @@ function Xe_peebles_equation(RH::RecombinationHistory, x_start)
     
 end
 
-function Xe_of_x(RH::RecombinationHistory)
+function Xe_no_reion_of_x(RH::RecombinationHistory)
 
     x = range(RH.x_start, RH.x_end, RH.npts_rec_arrays)
     saha = [Xe_saha_equation_with_He(RH, i) for i in x]
@@ -149,13 +149,17 @@ function Xe_reion_of_x(RH::RecombinationHistory)
 
 end
 
+function Xe_of_x(RH::RecombinationHistory, reionization::Bool = true)
+    if reionization
+        return Xe_reion_of_x(RH)
+    else
+        return Xe_noreion_of_x(RH)
+    end
+end
+
 function n_e_of_x(RH::RecombinationHistory, reionization::Bool = true)
 
-    if reionization
-        Xe = Xe_reion_of_x(RH)
-    else
-        Xe = Xe_of_x(RH)
-    end
+    Xe = Xe_of_x(RH, reionization)
 
     n_b(x) = RH.cosmo.Ω0_B * eval_ρ0_crit(RH.cosmo.H0_SI) * exp(-3x) / m_H_SI
     n_H(x) = (1.0 - RH.Yp) * n_b(x)
