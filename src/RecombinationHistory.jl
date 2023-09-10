@@ -153,7 +153,7 @@ function Xe_of_x(RH::RecombinationHistory, reionization::Bool = true)
     if reionization
         return Xe_reion_of_x(RH)
     else
-        return Xe_noreion_of_x(RH)
+        return Xe_no_reion_of_x(RH)
     end
 end
 
