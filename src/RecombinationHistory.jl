@@ -35,17 +35,16 @@ function Xe_saha_equation(RH::RecombinationHistory, x::Float64)
     T_b :: Float64 = RH.cosmo.T0_CMB * exp(-x)
     k :: Float64 = (ħ_SI^3 * n_b)^(-1) * (m_e_SI*k_b_SI*T_b/2π)^(3/2) * exp(-ϵ0_SI/(k_b_SI*T_b))
     # Avoid subtract huge floats with same magnitude 
-    if 4/k < 1e-5
-        Xe = 1.0
+    if 4.0/k < 1e-5
+        Xe = 1.0 - 1.0/k + 2.0/k^2
     else 
         Xe = 0.5 * (sqrt(k^2+4k) - k)
     end 
     return Xe
 end
 
-function Xe_saha_equation_with_He(RH::RecombinationHistory, x::Float64)
+function Xe_saha_equation_with_He_step(RH::RecombinationHistory, x::Float64, f_e::Float64)
     
-    f_e = 1.0
     f_e_new = 1.0
     diff = Inf64
 
@@ -54,17 +53,17 @@ function Xe_saha_equation_with_He(RH::RecombinationHistory, x::Float64)
 
     n_b = RH.cosmo.Ω0_B * eval_ρ0_crit(RH.cosmo.H0_SI) * exp(-3x) / m_H_SI
     T_b = RH.cosmo.T0_CMB * exp(-x)
-    a = (m_e_SI * k_b_SI * T_b / 2π)^(3/2)
+    a = (m_e_SI * k_b_SI * T_b / 2π)^(1.5)
 
-    while diff>1e-5
+    while diff>1e-8
 
         k1 = 2.0/(f_e*n_b*ħ_SI^3) * a * exp(-ξ0_SI/(k_b_SI*T_b))
         k2 = 4.0/(f_e*n_b*ħ_SI^3) * a * exp(-ξ1_SI/(k_b_SI*T_b))
         k3 = 1.0/(f_e*n_b*ħ_SI^3) * a * exp(-ϵ0_SI/(k_b_SI*T_b))
 
-        X_H1 = k3 / (1 + k3)
-        X_He1 = k1 / (1 + k1 + k1*k2)
-        X_He2 = k1 * k2 / (1 + k1 + k1*k2)
+        X_H1 = k3 / (1.0 + k3)
+        X_He1 = k1 / (1.0 + k1 + k1*k2)
+        X_He2 = k1 * k2 / (1.0 + k1 + k1*k2)
 
         f_e_new = (2X_He2 + X_He1)*RH.Yp/4 + X_H1*(1-RH.Yp)
         diff = abs(f_e_new - f_e)
@@ -74,6 +73,14 @@ function Xe_saha_equation_with_He(RH::RecombinationHistory, x::Float64)
 
     return f_e/(1-RH.Yp)
 
+end
+
+function Xe_saha_equation_with_He(RH::RecombinationHistory, range::AbstractRange)
+    Xe = [Xe_saha_equation_with_He_step(RH, range[begin], 1.0)]
+    for i in range
+        push!(Xe, Xe_saha_equation_with_He_step(RH, i, last(Xe)))
+    end
+    return Xe[2:end]
 end
 
 function rhs_peebles_equation(RH::RecombinationHistory, Xe, x::Float64)
@@ -102,7 +109,7 @@ end
 
 function Xe_peebles_equation(RH::RecombinationHistory, x_start)
 
-    u_0 = Xe_saha_equation_with_He(RH, x_start)
+    u_0 = Xe_saha_equation_with_He_step(RH, x_start, 1.0)
 
 	rhs(u, p, t) = rhs_peebles_equation(RH, u, t)
 
@@ -115,7 +122,7 @@ end
 function Xe_no_reion_of_x(RH::RecombinationHistory)
 
     x = range(RH.x_start, RH.x_end, RH.npts_rec_arrays)
-    saha = [Xe_saha_equation_with_He(RH, i) for i in x]
+    saha = Xe_saha_equation_with_He(RH, x)
 
     indx_limit = first(findall(x -> x<RH.Xe_saha_limit, saha))
     x_limit =  x[indx_limit]
@@ -130,18 +137,19 @@ end
 function Xe_reion_of_x(RH::RecombinationHistory)
 
     x = range(RH.x_start, RH.x_end, RH.npts_rec_arrays)
-    saha = [Xe_saha_equation_with_He(RH, i) for i in x]
+    saha = Xe_saha_equation_with_He(RH, x)
 
     indx_limit = first(findall(x -> x<RH.Xe_saha_limit, saha))
     x_limit =  x[indx_limit]
+    peebles = Xe_peebles_equation(RH,x_limit)
 
     # Reionization correction
     f_He = 0.25 * RH.Yp / (1 - RH.Yp)
-    y_reion = (1 + RH.z_reion)^(3/2)
+    y_reion = (1 + RH.z_reion)^(1.5)
     Δy_reion = 1.5 * RH.Δz_reion * sqrt(1+RH.z_reion)
     correction_H = [0.5 * (1+f_He) * (1+tanh((y_reion-exp(-1.5*i))/Δy_reion)) for i in x[indx_limit:end]] 
     correction_He = [0.5 * f_He * (1+tanh((RH.z_He_reion - x_to_redshift(i) )/RH.Δz_He_reion)) for i in x[indx_limit:end]]
-    peebles = Xe_peebles_equation(RH,x_limit)(x[indx_limit:end]) .+ correction_H .+ correction_He
+    peebles = peebles(x[indx_limit:end]) .+ correction_H .+ correction_He
 
     Xe = [saha[begin:indx_limit-1];peebles]
     
