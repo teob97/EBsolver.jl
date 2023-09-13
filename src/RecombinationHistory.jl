@@ -181,25 +181,33 @@ function n_e_of_x(RH::RecombinationHistory, reionization::Bool = true)
 end
 
 function τ_of_x(RH::RecombinationHistory, reionization::Bool = true)
-
     u_0 = 0.0
     n_e = n_e_of_x(RH, reionization)
-
 	rhs(u, p, t) = - σ_T_SI * c_SI * n_e(t) / H_of_x(RH.cosmo, t)
-
 	prob = ODE.ODEProblem(rhs, u_0, (RH.x_end, RH.x_start))
-	
 	f = ODE.solve(prob, ODE.Tsit5(), verbose = false)
-
     x = range(RH.x_start, RH.x_end, RH.npts_rec_arrays)
-
     return Spline.interpolate(x, f(x), Spline.BSplineOrder(4))
+end
 
+function τ_of_x(RH::RecombinationHistory, n_e, reionization::Bool = true)
+    u_0 = 0.0
+	rhs(u, p, t) = - σ_T_SI * c_SI * n_e(t) / H_of_x(RH.cosmo, t)
+	prob = ODE.ODEProblem(rhs, u_0, (RH.x_end, RH.x_start))
+	f = ODE.solve(prob, ODE.Tsit5(), verbose = false)
+    x = range(RH.x_start, RH.x_end, RH.npts_rec_arrays)
+    return Spline.interpolate(x, f(x), Spline.BSplineOrder(4))
 end
 
 function dτdx_of_x(RH::RecombinationHistory, reionization::Bool = true)
     x = range(RH.x_start, RH.x_end, RH.npts_rec_arrays)
     n_e = n_e_of_x(RH, reionization)
+    dτ = [- σ_T_SI * c_SI * n_e(t) / H_of_x(RH.cosmo, t) for t in x]
+    return Spline.interpolate(x, dτ, Spline.BSplineOrder(4))
+end
+
+function dτdx_of_x(RH::RecombinationHistory, n_e, reionization::Bool = true)
+    x = range(RH.x_start, RH.x_end, RH.npts_rec_arrays)
     dτ = [- σ_T_SI * c_SI * n_e(t) / H_of_x(RH.cosmo, t) for t in x]
     return Spline.interpolate(x, dτ, Spline.BSplineOrder(4))
 end
@@ -212,12 +220,13 @@ end
 
 function visibility_function_of_x(RH::RecombinationHistory, reonization::Bool = true)
 
-    τ = τ_of_x(RH, reonization)
-    τ_derivative = dτdx_of_x(RH, reonization)
-
-    g(x) = -τ_derivative(x)*exp(-τ(x))
+    n_e = n_e_of_x(RH, reonization)
+    τ = τ_of_x(RH, n_e, reonization)
+    τ_derivative = dτdx_of_x(RH, n_e, reonization)
 
     x = range(RH.x_start, RH.x_end, RH.npts_rec_arrays)
+
+    g(k) = -τ_derivative(k)*exp(-τ(k))
 
     return Spline.interpolate(x, g.(x), Spline.BSplineOrder(4))
 
