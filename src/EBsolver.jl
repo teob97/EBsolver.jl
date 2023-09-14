@@ -9,5 +9,6 @@ import NaNMath
 include("Utils.jl")
 include("BackgroundCosmology.jl")
 include("RecombinationHistory.jl")
+include("Perturbations.jl")
 
 end # module EBsolver
