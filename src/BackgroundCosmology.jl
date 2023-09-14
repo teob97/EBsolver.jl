@@ -4,6 +4,7 @@ export H_of_x, Hp_of_x, dHpdx_of_x, ddHpddx_of_x
 export Ω_B, Ω_CDM, Ω_k, Ω_nu, Ω_γ, Ω_Λ, Ω_tot
 export η_of_x, t_of_x
 export comoving_distance_of_x, angular_distance_of_x, luminosity_distance_of_x
+export x_equality, x_acceleration
 
 eval_ρ0_crit(H0::Float64) = (3*H0^2)/(8*π*G_SI)
 eval_Ω0_γ(T0_CMB_kelvin::Float64, H0::Float64) = 2 * (π^2/30) * (k_b_SI*T0_CMB_kelvin)^4 / (ħ_SI^3 * c_SI^3 * eval_ρ0_crit(H0) * c_SI^2)
