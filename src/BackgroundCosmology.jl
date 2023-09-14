@@ -52,7 +52,7 @@ H2_of_x(BC::BackgroundCosmology, x::Vector{Float64})	= [H_of_x(BC, i) for i in x
 H2_of_x(BC::BackgroundCosmology, x::AbstractRange)		= H_of_x(BC, collect(x))
 
 Ω_B(BC::BackgroundCosmology, x::Float64)::Float64		= BC.Ω0_B	* BC.H0_SI^2 / (exp(3x) * H2_of_x(BC, x))
-Ω_CDM(BC::BackgroundCosmology, x::Float64)::Float64	= BC.Ω0_CDM	* BC.H0_SI^2 / (exp(3x) * H2_of_x(BC, x))
+Ω_CDM(BC::BackgroundCosmology, x::Float64)::Float64		= BC.Ω0_CDM	* BC.H0_SI^2 / (exp(3x) * H2_of_x(BC, x))
 Ω_γ(BC::BackgroundCosmology, x::Float64)::Float64		= BC.Ω0_γ	* BC.H0_SI^2 / (exp(4x) * H2_of_x(BC, x))
 Ω_nu(BC::BackgroundCosmology, x::Float64)::Float64		= BC.Ω0_nu	* BC.H0_SI^2 / (exp(4x) * H2_of_x(BC, x))
 Ω_k(BC::BackgroundCosmology, x::Float64)::Float64		= BC.Ω0_k	* BC.H0_SI^2 / (exp(2x) * H2_of_x(BC, x))
@@ -68,7 +68,7 @@ H2_of_x(BC::BackgroundCosmology, x::AbstractRange)		= H_of_x(BC, collect(x))
 Ω_B(BC::BackgroundCosmology, x::AbstractRange)		= Ω_B(BC, collect(x))
 Ω_CDM(BC::BackgroundCosmology, x::AbstractRange)	= Ω_CDM(BC, collect(x))	
 Ω_γ(BC::BackgroundCosmology, x::AbstractRange)		= Ω_γ(BC, collect(x))
-Ω_nu(BC::BackgroundCosmology, x::AbstractRange)	= Ω_nu(BC, collect(x))
+Ω_nu(BC::BackgroundCosmology, x::AbstractRange)		= Ω_nu(BC, collect(x))
 Ω_k(BC::BackgroundCosmology, x::AbstractRange)		= Ω_k(BC, collect(x))
 Ω_Λ(BC::BackgroundCosmology, x::AbstractRange)		= Ω_Λ(BC, collect(x))
 
@@ -134,6 +134,14 @@ function luminosity_distance_of_x(BC::BackgroundCosmology, x::AbstractRange)
 	return luminosity_distance_of_x(BC, collect(x))
 end
 
+function x_equality(BC::BackgroundCosmology)
+	return log((BC.Ω0_γ+BC.Ω0_nu)/(BC.Ω0_CDM+BC.Ω0_B))
+end
+
+function x_acceleration(BC::BackgroundCosmology)
+	return log(cbrt((BC.Ω0_CDM+BC.Ω0_B)/BC.Ω0_Λ))
+end
+
 Base.show(io::IO, BC::BackgroundCosmology) = print(
 	io, 
 	"Info about cosmology class:\n",
@@ -145,7 +153,5 @@ Base.show(io::IO, BC::BackgroundCosmology) = print(
 	"Ω0_γ:\t\t", 	BC.Ω0_γ,"\n",
 	"N_eff:\t\t", 	BC.N_eff,"\n",
 	"h:\t\t", 		BC.h,"\n",
-	"T0_CMB:\t\t", 	BC.T0_CMB,"\n",
-	"a_equality:\t", (BC.Ω0_γ+BC.Ω0_nu)/(BC.Ω0_CDM+BC.Ω0_B),"\n",
-	"a_acceleration:\t", cbrt((BC.Ω0_CDM+BC.Ω0_B)/BC.Ω0_Λ)
+	"T0_CMB:\t\t", 	BC.T0_CMB,"\n" 
 )
