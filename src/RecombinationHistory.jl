@@ -57,9 +57,11 @@ function Xe_saha_equation_with_He_step(RH::RecombinationHistory, x::Float64, f_e
 
     while diff>1e-8
 
-        k1 = 2.0/(f_e*n_b*ħ_SI^3) * a * exp(-ξ0_SI/(k_b_SI*T_b))
-        k2 = 4.0/(f_e*n_b*ħ_SI^3) * a * exp(-ξ1_SI/(k_b_SI*T_b))
-        k3 = 1.0/(f_e*n_b*ħ_SI^3) * a * exp(-ϵ0_SI/(k_b_SI*T_b))
+        n = f_e * n_b * ħ_SI^3
+
+        k1 = (2.0/n) * a * exp(-ξ0_SI/(k_b_SI*T_b))
+        k2 = (4.0/n) * a * exp(-ξ1_SI/(k_b_SI*T_b))
+        k3 = (1.0/n) * a * exp(-ϵ0_SI/(k_b_SI*T_b))
 
         X_H1 = k3 / (1.0 + k3)
         X_He1 = k1 / (1.0 + k1 + k1*k2)

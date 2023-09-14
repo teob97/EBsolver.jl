@@ -94,7 +94,7 @@ let
     dg_noreion = diff(g_noreion)
     ddg_noreion = diff(dg_noreion)
 
-    g = visibility_function_of_x(rh, false)
+    g = visibility_function_of_x(rh, true)
     dg = diff(g)
     ddg = diff(dg)
 
